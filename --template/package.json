@@ -1,5 +1,5 @@
 {
-  "name": "aniversario_mateus",
+  "name": "--template",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,30 +8,19 @@
     "start": "next start",
     "lint": "eslint"
   },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
-  },
   "dependencies": {
-    "@prisma/client": "latest",
-    "@supabase/ssr": "^0.10.3",
-    "@supabase/supabase-js": "^2.107.0",
-    "dotenv": "^16.4.5",
-    "next": "16.2.6",
+    "next": "16.2.7",
     "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "xlsx": "^0.18.5"
+    "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
-    "@types/qrcode": "^1.5.6",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.6",
-    "prisma": "latest",
+    "eslint-config-next": "16.2.7",
     "tailwindcss": "^4",
-    "tsx": "^4.7.0",
     "typescript": "^5"
   }
 }
