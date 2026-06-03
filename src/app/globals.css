@@ -1,26 +1,93 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --safari-cream: #f5ede2;
+  --safari-tan: #e8d4bc;
+  --safari-brown: #8b6f47;
+  --safari-dark: #3d2817;
+  --safari-forest: #5a7a52;
+  --safari-light: #fef9f3;
+  --safari-gold: #d4a574;
+  --safari-shadow: rgba(61, 40, 23, 0.15);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--safari-cream);
+  --color-foreground: var(--safari-dark);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  min-height: 100vh;
+  background-color: var(--safari-cream);
+  background-image:
+    radial-gradient(circle at 15% 10%, rgba(90, 122, 82, 0.12), transparent 25%),
+    radial-gradient(circle at 85% 20%, rgba(139, 111, 71, 0.1), transparent 22%),
+    radial-gradient(circle at 10% 80%, rgba(212, 165, 116, 0.08), transparent 20%),
+    radial-gradient(circle at 90% 85%, rgba(90, 122, 82, 0.1), transparent 24%),
+    linear-gradient(180deg, #fef9f3 0%, #f5ede2 40%, #efe1d0 100%);
+  color: var(--safari-dark);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  background-attachment: fixed;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.18) 0.25rem, transparent 0.25rem);
+  background-size: 3rem 3rem;
+  opacity: 0.55;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+input,
+textarea,
+select,
+button {
+  font: inherit;
+}
+
+::selection {
+  background: rgba(197, 143, 60, 0.25);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle at top left, rgba(255, 255, 255, 0.18), transparent 24%),
+    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.18), transparent 24%);
+}
+
+button,
+input,
+textarea,
+select {
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+*:focus-visible {
+  outline: 2px solid rgba(76, 76, 59, 0.3);
+  outline-offset: 2px;
+}
+
+@layer utilities {
+  .invite-card {
+    background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 30%), #f7efe1;
+    border: 1px solid rgba(216, 159, 60, 0.2);
+    box-shadow: 0 25px 60px rgba(47, 36, 22, 0.08);
+  }
+
+  .invite-panel {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(216, 159, 60, 0.16);
+    box-shadow: 0 18px 42px rgba(47, 36, 22, 0.08);
+  }
 }

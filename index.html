@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mickey Safari - Aniversário do Mateus</title>
+    <!-- Fonte moderna e divertida do Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --safari-green: #4CAF50;
+            --safari-dark-green: #2E7D32;
+            --safari-yellow: #FFC107;
+            --safari-orange: #FF9800;
+            --safari-brown: #5D4037;
+            --safari-bg: #F1F8E9;
+        }
+
+        body {
+            font-family: 'Baloo 2', cursive, sans-serif;
+            background-color: var(--safari-bg);
+            /* Uma textura sutil para dar um ar mais rústico */
+            background-image: url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            color: var(--safari-brown);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        header {
+            background-color: var(--safari-green);
+            color: white;
+            padding: 40px 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            margin-bottom: 30px;
+            border: 5px solid var(--safari-dark-green);
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            line-height: 1.1;
+        }
+
+        header p {
+            font-size: 1.5em;
+            margin: 10px 0 0;
+            color: var(--safari-yellow);
+            font-weight: 600;
+        }
+
+        .characters {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .character-card {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 3px dashed var(--safari-orange);
+            width: 140px;
+            transition: transform 0.3s ease;
+        }
+
+        .character-card:hover {
+            transform: scale(1.05) rotate(-2deg);
+        }
+
+        .character-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .countdown {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            border: 3px solid var(--safari-brown);
+        }
+
+        .countdown h2 {
+            margin-top: 0;
+            color: var(--safari-dark-green);
+            font-size: 2em;
+        }
+
+        .timer-display {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            font-size: 2.5em;
+            font-weight: 800;
+        }
+
+        .timer-box {
+            background: var(--safari-yellow);
+            color: var(--safari-brown);
+            padding: 10px 15px;
+            border-radius: 10px;
+            min-width: 80px;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1);
+        }
+
+        .timer-label {
+            display: block;
+            font-size: 0.35em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .details {
+            background: var(--safari-dark-green);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 3px solid var(--safari-yellow);
+        }
+
+        .details h3 {
+            color: var(--safari-yellow);
+            margin-top: 0;
+            font-size: 2em;
+        }
+
+        .details p {
+            font-size: 1.3em;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        
+        /* Responsividade para celular */
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.2em; }
+            .timer-display { font-size: 1.8em; flex-wrap: wrap; }
+            .timer-box { min-width: 60px; }
+            .character-card { width: 120px; }
+        }
+
+        .music-btn {
+            background-color: var(--safari-orange);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+            font-family: 'Baloo 2', cursive, sans-serif;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .music-btn:hover {
+            background-color: #e68a00;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Aventura do Mateus!</h1>
+            <p>Venha celebrar no nosso Mickey Safari 🐘🦒</p>
+        </header>
+
+        <!-- Botão e Player de Música -->
+        <button class="music-btn" onclick="toggleMusic()" id="music-btn">🎵 Tocar Música do Safari</button>
+        <audio id="bg-music" loop>
+            <source src="musica-safari.mp3" type="audio/mpeg">
+        </audio>
+
+        <section class="characters">
+            <div class="character-card">
+                <img src="img/mickey-safari.png" alt="Mickey Safari" onerror="this.src='https://placehold.co/200x200/FFC107/5D4037?text=Mickey+Safari'">
+            </div>
+            <div class="character-card">
+                <img src="img/minnie-safari.png" alt="Minnie Safari" onerror="this.src='https://placehold.co/200x200/4CAF50/FFFFFF?text=Minnie+Safari'">
+            </div>
+            <div class="character-card">
+                <img src="img/donald-safari.png" alt="Donald Safari" onerror="this.src='https://placehold.co/200x200/FF9800/FFFFFF?text=Donald+Safari'">
+            </div>
+        </section>
+
+        <section class="countdown">
+            <h2>A expedição começa em:</h2>
+            <div class="timer-display" id="timer-display">
+                <div class="timer-box"><span id="days">00</span><span class="timer-label">Dias</span></div>
+                <div class="timer-box"><span id="hours">00</span><span class="timer-label">Horas</span></div>
+                <div class="timer-box"><span id="minutes">00</span><span class="timer-label">Min</span></div>
+                <div class="timer-box"><span id="seconds">00</span><span class="timer-label">Seg</span></div>
+            </div>
+        </section>
+
+        <section class="details">
+            <h3>📍 Detalhes da Festa</h3>
+            <p><strong>Data:</strong> 15 de Outubro de 2026</p>
+            <p><strong>Hora:</strong> 14h00</p>
+            <p><strong>Local:</strong> Salão de Festas Safari Aventuras<br>Rua dos Animais, 123 - Floresta</p>
+        </section>
+    </div>
+
+    <script>
+        // --- Configuração do Contador ---
+        // Defina aqui a data e a hora da festa do Mateus! Formato: "Mês Dia, Ano Hora:Minuto:Segundo"
+        const eventDate = new Date("October 15, 2026 14:00:00").getTime();
+
+        const timer = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = eventDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days.toString().padStart(2, '0');
+            document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+            document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
+            document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+
+            // Quando a data chegar:
+            if (distance < 0) {
+                clearInterval(timer);
+                document.getElementById("timer-display").innerHTML = "A festa começou! 🎉";
+                document.getElementById("timer-display").style.color = "var(--safari-dark-green)";
+            }
+        }, 1000);
+
+        // --- Controle da Música ---
+        function toggleMusic() {
+            const audio = document.getElementById("bg-music");
+            const btn = document.getElementById("music-btn");
+            if (audio.paused) {
+                audio.play();
+                btn.innerHTML = "⏸️ Pausar Música";
+            } else {
+                audio.pause();
+                btn.innerHTML = "🎵 Tocar Música do Safari";
+            }
+        }
+    </script>
+</body>
+</html>

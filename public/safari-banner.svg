@@ -1,0 +1,12 @@
+<svg width="640" height="420" viewBox="0 0 640 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="420" rx="40" fill="#F4E4CA" />
+  <rect x="24" y="24" width="592" height="372" rx="32" fill="#E8D2B2" stroke="#6F4D2A" stroke-width="12" />
+  <path d="M102 382C102 382 132 322 188 312C244 302 286 328 332 326C378 324 418 298 458 294C498 290 528 324 528 324" stroke="#4B6B41" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M70 94C70 94 82 58 122 46C162 34 218 48 242 94C266 140 272 196 226 210C180 224 118 188 70 94Z" fill="#7FA67C" opacity="0.9" />
+  <path d="M520 108C520 108 580 72 602 110C624 148 596 198 564 198C532 198 520 108 520 108Z" fill="#7FA67C" opacity="0.9" />
+  <path d="M412 110C412 110 388 70 340 62C292 54 246 82 238 122C230 162 252 202 292 206C332 210 384 158 412 110Z" fill="#C19A58" />
+  <path d="M240 160C244 130 268 112 300 112C332 112 356 130 360 160C364 190 340 214 304 214C268 214 236 190 240 160Z" fill="#000" />
+  <circle cx="300" cy="182" r="70" fill="#000" />
+  <path d="M276 92C276 92 294 62 314 68C334 74 332 98 318 110C304 122 276 112 276 92Z" fill="#C19A58" />
+  <path d="M246 346C274 320 326 320 354 346" stroke="#6F4D2A" stroke-width="12" stroke-linecap="round" />
+</svg>
