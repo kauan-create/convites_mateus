@@ -81,29 +81,6 @@ export default function InviteResponseForm({
     setError(null);
 
     try {
-      const response = await fetch("/api/rsvp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          inviteCode,
-          resposta: status,
-          acompanhantes: confirmedMembers.length,
-          observacoes: observations,
-        }),
-      });
-
-      if (!response.ok) {
-        const body = await response.json().catch(() => null);
-        throw new Error(body?.error ?? "Falha ao enviar resposta");
-      }
-
-      setSubmitted(true);
-    } catch (err) {
-      console.warn("API indisponível. Simulando sucesso do RSVP localmente.", err);
-
-      try {
         const savedInvites = localStorage.getItem("safari_invites");
         if (savedInvites) {
           let invites = JSON.parse(savedInvites);
@@ -152,10 +129,8 @@ export default function InviteResponseForm({
         console.error("Erro ao salvar no localStorage", e);
       }
 
-      setSubmitted(true);
-    } finally {
-      setSaving(false);
-    }
+    setSubmitted(true);
+    setSaving(false);
   };
 
   if (submitted) {

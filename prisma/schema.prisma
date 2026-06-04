@@ -1,12 +1,11 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  url      = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model Familia {
@@ -15,8 +14,6 @@ model Familia {
   convidados   Convidado[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
-
-  @@map("familias")
 }
 
 model Convidado {
@@ -28,13 +25,9 @@ model Convidado {
   observacoes        String?
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
-
   familiaId          String?
-  familia            Familia? @relation(fields: [familiaId], references: [id], onDelete: SetNull)
-
+  familia            Familia? @relation(fields: [familiaId], references: [id])
   convite            Convite?
-
-  @@map("convidados")
 }
 
 model Convite {
@@ -44,11 +37,7 @@ model Convite {
   title       String
   link        String
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
   status      String    @default("Pendente")
-
   convidadoId String    @unique
   convidado   Convidado @relation(fields: [convidadoId], references: [id], onDelete: Cascade)
-
-  @@map("convites")
 }

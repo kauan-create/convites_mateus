@@ -29,9 +29,6 @@ export async function POST(request: Request) {
       },
       include: { convidado: { include: { familia: true } } }
     });
-
     return NextResponse.json({ family: { ...familiaRecord, convidados: [guest] }, guest, invite });
-  } catch (error) {
-    return NextResponse.json({ error: "Erro ao criar família" }, { status: 500 });
-  }
+  } catch (error) { return NextResponse.json({ error: "Erro" }, { status: 500 }); }
 }

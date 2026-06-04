@@ -34,9 +34,6 @@ export async function POST(request: Request) {
       },
       include: { convidado: true }
     });
-
     return NextResponse.json({ guest, invite });
-  } catch (error) {
-    return NextResponse.json({ error: "Erro ao criar convite" }, { status: 500 });
-  }
+  } catch (error) { return NextResponse.json({ error: "Erro" }, { status: 500 }); }
 }

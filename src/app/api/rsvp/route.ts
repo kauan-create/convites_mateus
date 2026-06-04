@@ -26,9 +26,6 @@ export async function POST(request: Request) {
         observacoes: observacoes ? `${invite.convidado.observacoes || ''}\n[RSVP]: ${observacoes}` : invite.convidado.observacoes
       }
     });
-
     return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: "Erro ao processar RSVP" }, { status: 500 });
-  }
+  } catch (error) { return NextResponse.json({ error: "Erro" }, { status: 500 }); }
 }
