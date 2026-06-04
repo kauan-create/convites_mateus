@@ -13,6 +13,10 @@ model Familia {
   id           String      @id @default(cuid())
   nome_familia String
   convidados   Convidado[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("familias")
 }
 
 model Convidado {
@@ -22,9 +26,15 @@ model Convidado {
   acompanhantes      Int      @default(0)
   status_confirmacao String   @default("Pendente")
   observacoes        String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
   familiaId          String?
-  familia            Familia? @relation(fields: [familiaId], references: [id])
+  familia            Familia? @relation(fields: [familiaId], references: [id], onDelete: SetNull)
+
   convite            Convite?
+
+  @@map("convidados")
 }
 
 model Convite {
@@ -34,7 +44,11 @@ model Convite {
   title       String
   link        String
   createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   status      String    @default("Pendente")
+
   convidadoId String    @unique
   convidado   Convidado @relation(fields: [convidadoId], references: [id], onDelete: Cascade)
+
+  @@map("convites")
 }
