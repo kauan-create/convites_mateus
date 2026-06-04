@@ -247,18 +247,6 @@ export default function HomePage() {
     }
 
     async function loadDashboard() {
-      try {
-        const response = await fetch("/api/dashboard", { cache: "no-store" });
-        if (!response.ok) {
-        throw new Error("API Indisponível");
-        }
-
-        const data = await response.json();
-        setGuests(data.guests.map(mapGuest));
-        setFamilies(data.families.map(mapFamily));
-        setInvites(data.invites.map(mapInvite));
-      } catch (error) {
-      console.warn("Falha ao carregar dados do dashboard, usando fallback local.", error);
       const localGuests = localStorage.getItem("safari_guests");
       const localFamilies = localStorage.getItem("safari_families");
       const localInvites = localStorage.getItem("safari_invites");
@@ -272,9 +260,7 @@ export default function HomePage() {
         setFamilies(initialFamilies);
         setInvites(initialInvites);
       }
-      } finally {
-        setLoading(false);
-      }
+      setLoading(false);
     }
 
     loadDashboard();
@@ -343,39 +329,6 @@ export default function HomePage() {
     let code = generateCode();
     let link = buildLink(appOrigin, code, individualName, "", "", "individual");
 
-    try {
-      const response = await fetch("/api/invite", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: individualName,
-          family: individualFamily,
-          phone: individualPhone,
-          message: individualMessage,
-          companions: 0,
-          code,
-          link,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao criar convite individual");
-      }
-
-      const data = await response.json();
-      const newGuest = mapGuest(data.guest);
-      setGuests((current) => [newGuest, ...current]);
-      setInvites((current) => [mapInvite(data.invite), ...current]);
-
-      if (data.guest.familia) {
-        const newFam = mapFamily({ ...data.guest.familia, convidados: [data.guest] });
-        setFamilies((current) => [newFam, ...current]);
-      }
-    } catch (error) {
-      console.warn("API indisponível. Criando convite localmente.", error);
-      
       const newGuest: Guest = {
         id: Math.random().toString(36).substring(2, 9),
         name: individualName,
@@ -397,13 +350,11 @@ export default function HomePage() {
       
       setGuests(current => [newGuest, ...current]);
       setInvites(current => [newInvite, ...current]);
-    } finally {
       setIndividualName("");
       setIndividualPhone("");
       setIndividualMessage("");
       setIndividualFamily("");
       setSaving(false);
-    }
   };
 
   const createFamilyInvite = async (event: FormEvent<HTMLFormElement>) => {
@@ -416,34 +367,6 @@ export default function HomePage() {
       .filter(Boolean);
     const link = buildLink(appOrigin, code, familyName, familyName, memberNames.join(", "), "family");
 
-    try {
-      const response = await fetch("/api/family", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          familyName,
-          members: memberNames,
-          message: familyMessage,
-          code,
-          link,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Erro ao criar convite de família");
-      }
-
-      const data = await response.json();
-      const newFam = mapFamily(data.family);
-      setFamilies((current) => [newFam, ...current]);
-      setInvites((current) => [mapInvite(data.invite), ...current]);
-      
-      const newGuest = mapGuest(data.guest);
-      setGuests((current) => [newGuest, ...current]);
-    } catch (error) {
-      console.warn("API indisponível. Criando família localmente.", error);
       const newFam: Family = {
         id: Math.random().toString(36).substring(2, 9),
         name: familyName,
@@ -473,12 +396,10 @@ export default function HomePage() {
         }));
         setGuests(current => [...newGuests, ...current]);
       }
-    } finally {
       setFamilyName("");
       setFamilyMembers([""]);
       setFamilyMessage("");
       setSaving(false);
-    }
   };
 
   const exportToExcel = () => {

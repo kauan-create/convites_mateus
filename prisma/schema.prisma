@@ -1,43 +1,4 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "postgresql"
-  url      = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
-}
-
-model Familia {
-  id           String      @id @default(cuid())
-  nome_familia String
-  convidados   Convidado[]
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-}
-
-model Convidado {
-  id                 String   @id @default(cuid())
-  nome               String
-  telefone           String?
-  acompanhantes      Int      @default(0)
-  status_confirmacao String   @default("Pendente")
-  observacoes        String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  familiaId          String?
-  familia            Familia? @relation(fields: [familiaId], references: [id])
-  convite            Convite?
-}
-
-model Convite {
-  id          String    @id @default(cuid())
-  codigo      String    @unique
-  type        String    @default("individual")
-  title       String
-  link        String
-  createdAt   DateTime  @default(now())
-  status      String    @default("Pendente")
-  convidadoId String    @unique
-  convidado   Convidado @relation(fields: [convidadoId], references: [id], onDelete: Cascade)
+  url      = env("DATABASE_URL")
 }
