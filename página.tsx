@@ -1,15 +1,9 @@
-import { cookies } from 'next/headers'
-
 export default async function Page() {
-  const cookieStore = await cookies()
-  
-  const { data: todos } = await supabase.from('todos').select()
 
   return (
-    <ul>
-      {todos?.map((todo) => (
-        <li key={todo.id}>{todo.name}</li>
-      ))}
-    </ul>
+    <main style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1>Festa do Mateus! 🎉</h1>
+      <p>Site em construção...</p>
+    </main>
   )
 }
