@@ -10,6 +10,7 @@ type Guest = {
   phone: string;
   companions: number;
   status: string;
+  raw?: any;
 };
 
 type Family = {
@@ -17,6 +18,7 @@ type Family = {
   name: string;
   members: string;
   inviteStatus: string;
+  raw?: any;
 };
 
 type Invite = {
@@ -28,6 +30,7 @@ type Invite = {
   createdAt: string;
   status: string;
   guestId?: string;
+  raw?: any;
 };
 
 const statusMapping: Record<string, string> = {
@@ -48,17 +51,33 @@ const buildLink = (baseOrigin: string, code: string, name: string = "", family: 
   return `${origin}/rsvp/${code}?${qs}`;
 };
 
+const findId = (obj: any): string => {
+  if (!obj) return Math.random().toString(36).substring(2, 9);
+  if (obj.id !== undefined && obj.id !== null) return String(obj.id);
+  if (obj._id !== undefined && obj._id !== null) return String(obj._id);
+  if (obj.guestId !== undefined && obj.guestId !== null) return String(obj.guestId);
+  if (obj.codigo !== undefined && obj.codigo !== null) return String(obj.codigo);
+  
+  // Procura por qualquer chave que possa ser o ID
+  const keys = Object.keys(obj);
+  const idKey = keys.find(k => k.toLowerCase() === 'id' || k.toLowerCase().endsWith('id'));
+  if (idKey && obj[idKey] !== undefined && obj[idKey] !== null) return String(obj[idKey]);
+
+  return Math.random().toString(36).substring(2, 9);
+};
+
 const mapGuest = (guest: any): Guest => ({
-  id: guest.id || guest._id || Math.random().toString(36).substring(2, 9),
+  id: findId(guest),
   name: guest.nome || guest.name || "Sem nome",
   family: guest.familia?.nome_familia ?? guest.family ?? "Sem família (pode ser adicionado futuramente)",
   phone: guest.telefone ?? guest.phone ?? "-",
   companions: guest.acompanhantes ?? guest.companions ?? 0,
   status: statusMapping[guest.status_confirmacao] ?? guest.status ?? "Pendente",
+  raw: guest,
 });
 
 const mapFamily = (family: any): Family => ({
-  id: family.id || family._id || Math.random().toString(36).substring(2, 9),
+  id: findId(family),
   name: family.nome_familia || family.name || "Família",
   members: Array.isArray(family.convidados)
     ? family.convidados.map((member: any) => member.nome || member.name).join(", ")
@@ -67,6 +86,7 @@ const mapFamily = (family: any): Family => ({
     family.convidados?.[0]?.status_confirmacao
       ? statusMapping[family.convidados[0].status_confirmacao]
       : family.inviteStatus || "Pendente",
+  raw: family,
 });
 
 const mapInvite = (invite: any): Invite => {
@@ -74,14 +94,15 @@ const mapInvite = (invite: any): Invite => {
   const isFamilyInvite = guestName.startsWith("Família");
 
   return {
-    id: invite.id || invite._id || Math.random().toString(36).substring(2, 9),
+    id: findId(invite),
     type: invite.type || (isFamilyInvite ? "family" : "individual"),
     title: invite.title || (isFamilyInvite ? `Convite ${guestName}` : `Convite de ${guestName}`),
     code: invite.codigo || invite.code || "",
     link: invite.link || "",
     createdAt: invite.createdAt ? new Date(invite.createdAt).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR"),
     status: statusMapping[invite.convidado?.status_confirmacao] ?? invite.status ?? "Pendente",
-    guestId: invite.guestId || invite.convidadoId || invite.convidado?.id || invite.convidado?._id,
+    guestId: invite.guestId || invite.convidadoId || findId(invite.convidado),
+    raw: invite,
   };
 };
 
@@ -215,7 +236,8 @@ export default function HomePage() {
   };
   const saveGuest = async (id: string) => {
     setSaving(true);
-    const res = await fetch(`/api/guest?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
+    const guestObj = guests.find(g => g.id === id);
+    const res = await fetch(`/api/guest?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw, ...editGuestData }) });
     if (!res.ok) alert("Erro ao salvar convidado");
     setEditingGuest(null);
     await loadDashboard();
@@ -230,10 +252,10 @@ export default function HomePage() {
       const associatedInvite = invites.find((inv) => inv.guestId === id || (guestObj?.name && inv.title.includes(guestObj.name)));
       
       if (associatedInvite) {
-        await fetch(`/api/invite?id=${associatedInvite.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: associatedInvite.id }) });
+        await fetch(`/api/invite?id=${associatedInvite.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: associatedInvite.id, ...associatedInvite.raw }) });
       }
 
-      const res = await fetch(`/api/guest?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const res = await fetch(`/api/guest?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw }) });
       if (!res.ok) {
         const errTxt = await res.text();
         throw new Error(errTxt || "Erro desconhecido");
@@ -249,7 +271,8 @@ export default function HomePage() {
   };
   const saveFamily = async (id: string) => {
     setSaving(true);
-    const res = await fetch(`/api/family?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
+    const familyObj = families.find(f => f.id === id);
+    const res = await fetch(`/api/family?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw, ...editFamilyData }) });
     if (!res.ok) alert("Erro ao salvar família");
     setEditingFamily(null);
     await loadDashboard();
@@ -259,7 +282,8 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir esta família inteira?")) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/family?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const familyObj = families.find(f => f.id === id);
+      const res = await fetch(`/api/family?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw }) });
       if (!res.ok) {
         const errTxt = await res.text();
         throw new Error(errTxt || "Erro desconhecido");
@@ -275,7 +299,8 @@ export default function HomePage() {
   };
   const saveInvite = async (id: string) => {
     setSaving(true);
-    const res = await fetch(`/api/invite?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
+    const inviteObj = invites.find(i => i.id === id);
+    const res = await fetch(`/api/invite?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw, ...editInviteData }) });
     if (!res.ok) alert("Erro ao salvar convite");
     setEditingInvite(null);
     await loadDashboard();
@@ -285,7 +310,8 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir este link de convite?")) return;
     setSaving(true);
     try {
-      const res = await fetch(`/api/invite?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const inviteObj = invites.find(i => i.id === id);
+      const res = await fetch(`/api/invite?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw }) });
       if (!res.ok) {
         const errTxt = await res.text();
         throw new Error(errTxt || "Erro desconhecido");
