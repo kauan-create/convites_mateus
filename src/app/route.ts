@@ -6,7 +6,7 @@ export async function PUT(request: Request) {
     const data = await request.json();
     const { id, name, family, status } = data;
     
-    let familiaId: string | null = null;
+    let familiaId = null;
     if (family && family !== "Sem tribo / família" && family !== "Sem família (pode ser adicionado futuramente)") {
         let fam = await prisma.familia.findFirst({ where: { nome_familia: family } });
         if (!fam) {

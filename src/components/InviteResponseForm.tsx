@@ -81,55 +81,39 @@ export default function InviteResponseForm({
     setError(null);
 
     try {
-        const savedInvites = localStorage.getItem("safari_invites");
-        if (savedInvites) {
-          let invites = JSON.parse(savedInvites);
-          invites = invites.map((i: any) => {
-            if (String(i.code).toUpperCase() === String(inviteCode).toUpperCase()) {
-              return { ...i, status: status === "CONFIRMADO" ? "Confirmado" : "Recusado" };
-            }
-            return i;
-          });
-          localStorage.setItem("safari_invites", JSON.stringify(invites));
-        }
+      // Prepara a lista: quem está nas caixinhas = Confirmado, quem não = Recusado
+      const listaConvidados = memberNames.length > 0
+        ? memberNames.map((name) => ({
+            nome: name,
+            status: status === "CONFIRMADO" && confirmedMembers.includes(name) ? "Confirmado" : "Recusado",
+          }))
+        : [{
+            nome: guestName,
+            status: status === "CONFIRMADO" ? "Confirmado" : "Recusado",
+          }];
 
-        const savedGuests = localStorage.getItem("safari_guests");
-        if (savedGuests) {
-          let guests = JSON.parse(savedGuests);
-          guests = guests.map((g: any) => {
-            const isFamilyInvite = guestName ? String(guestName).toLowerCase().startsWith("família") : false;
-            const isExactName = g.name === guestName;
-            const isFamilyMatch = isFamilyInvite && familyName && g.family === familyName;
-            
-            if (isExactName || isFamilyMatch) {
-              return { ...g, status: status === "CONFIRMADO" ? "Confirmado" : "Recusado", companions: isExactName ? confirmedMembers.length : g.companions };
-            }
-            return g;
-          });
-          localStorage.setItem("safari_guests", JSON.stringify(guests));
-        }
+      const res = await fetch("/api/rsvp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          codigo: inviteCode,
+          status_convite: status === "CONFIRMADO" ? "Confirmado" : "Recusado",
+          convidados: listaConvidados,
+          observacoes: observations,
+          familia: familyName,
+        }),
+      });
 
-        const savedFamilies = localStorage.getItem("safari_families");
-        if (savedFamilies) {
-          let families = JSON.parse(savedFamilies);
-          families = families.map((f: any) => {
-            const cleanGuestName = guestName ? String(guestName).replace(/^Família\s+/i, "").trim() : "";
-            if (f.name === familyName || (cleanGuestName && f.name === cleanGuestName)) {
-              return { ...f, inviteStatus: status === "CONFIRMADO" ? "Confirmado" : "Recusado" };
-            }
-            return f;
-          });
-          localStorage.setItem("safari_families", JSON.stringify(families));
-        }
-
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("local-storage-update"));
-        }
-      } catch (e) {
-        console.error("Erro ao salvar no localStorage", e);
+      if (!res.ok) {
+        throw new Error("Erro ao salvar no banco de dados.");
       }
 
-    setSubmitted(true);
+      setSubmitted(true);
+      } catch (e) {
+      console.error("Erro ao salvar RSVP:", e);
+      setError("Ocorreu um erro ao enviar sua resposta. Tente novamente.");
+      }
+
     setSaving(false);
   };
 

@@ -29,61 +29,6 @@ type Invite = {
   status: string;
 };
 
-const initialGuests: Guest[] = [
-  {
-    id: "g1",
-    name: "Mateus Silva",
-    family: "Família Silva",
-    phone: "+55 11 99999-9999",
-    companions: 1,
-    status: "Confirmado",
-  },
-  {
-    id: "g2",
-    name: "Ana Costa",
-    family: "Família Costa",
-    phone: "+55 21 98888-8888",
-    companions: 0,
-    status: "Pendente",
-  },
-];
-
-const initialFamilies: Family[] = [
-  {
-    id: "f1",
-    name: "Família Oliveira",
-    members: "Pedro, Joana, Lucas",
-    inviteStatus: "Confirmado",
-  },
-  {
-    id: "f2",
-    name: "Família Santos",
-    members: "Beatriz, Miguel",
-    inviteStatus: "Pendente",
-  },
-];
-
-const initialInvites: Invite[] = [
-  {
-    id: "1",
-    type: "individual",
-    title: "Convite de Mateus",
-    code: "CONVITE42",
-    link: "/rsvp/convite42?n=Mateus%20Silva&f=Fam%C3%ADlia%20Silva&t=individual",
-    createdAt: "28/03/2026",
-    status: "Confirmado",
-  },
-  {
-    id: "2",
-    type: "family",
-    title: "Convite Família Santos",
-    code: "FAM2026",
-    link: "/rsvp/fam2026?n=Fam%C3%ADlia%20Santos&f=Fam%C3%ADlia%20Santos&m=Beatriz%2C%20Miguel&t=family",
-    createdAt: "28/03/2026",
-    status: "Pendente",
-  },
-];
-
 const statusMapping: Record<string, string> = {
   PENDENTE: "Pendente",
   CONFIRMADO: "Confirmado",
@@ -154,6 +99,19 @@ export default function HomePage() {
   const [saving, setSaving] = useState(false);
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [eventTimeLeft, setEventTimeLeft] = useState("");
+
+  const loadDashboard = async () => {
+    try {
+      const res = await fetch('/api/dashboard');
+      if (res.ok) {
+        const data = await res.json();
+        setGuests(data.guests);
+        setFamilies(data.families);
+        setInvites(data.invites);
+      }
+    } catch (e) { console.error(e); }
+    setLoading(false);
+  };
 
   useEffect(() => {
     // Conta regressiva para o dia do Safari (28/06/2026 às 17h)
@@ -246,81 +204,62 @@ export default function HomePage() {
       }
     }
 
-    async function loadDashboard() {
-      const localGuests = localStorage.getItem("safari_guests");
-      const localFamilies = localStorage.getItem("safari_families");
-      const localInvites = localStorage.getItem("safari_invites");
-
-      if (localGuests && localFamilies && localInvites) {
-        setGuests(JSON.parse(localGuests));
-        setFamilies(JSON.parse(localFamilies));
-        setInvites(JSON.parse(localInvites));
-      } else {
-        setGuests(initialGuests);
-        setFamilies(initialFamilies);
-        setInvites(initialInvites);
-      }
-      setLoading(false);
-    }
-
     loadDashboard();
-
-  const handleStorage = () => {
-    const localGuests = localStorage.getItem("safari_guests");
-    const localFamilies = localStorage.getItem("safari_families");
-    const localInvites = localStorage.getItem("safari_invites");
-    if (localGuests) setGuests(JSON.parse(localGuests));
-    if (localFamilies) setFamilies(JSON.parse(localFamilies));
-    if (localInvites) setInvites(JSON.parse(localInvites));
-  };
-
-  window.addEventListener("storage", handleStorage);
-  window.addEventListener("local-storage-update", handleStorage);
-
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-    window.removeEventListener("local-storage-update", handleStorage);
-  };
   }, []);
-
-  // Sincroniza todas as edições locais para o localStorage
-  useEffect(() => {
-    if (!loading) {
-      localStorage.setItem("safari_guests", JSON.stringify(guests));
-      localStorage.setItem("safari_families", JSON.stringify(families));
-      localStorage.setItem("safari_invites", JSON.stringify(invites));
-    }
-  }, [guests, families, invites, loading]);
 
   const startEditGuest = (guest: Guest) => {
     setEditingGuest(guest.id);
     setEditGuestData(guest);
   };
-  const saveGuest = (id: string) => {
-    setGuests(guests.map(g => g.id === id ? { ...g, ...editGuestData } as Guest : g));
+  const saveGuest = async (id: string) => {
+    setSaving(true);
+    await fetch('/api/guest', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
     setEditingGuest(null);
+    await loadDashboard();
+    setSaving(false);
   };
-  const deleteGuest = (id: string) => setGuests(guests.filter(g => g.id !== id));
+  const deleteGuest = async (id: string) => {
+    setSaving(true);
+    await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    await loadDashboard();
+    setSaving(false);
+  };
 
   const startEditFamily = (family: Family) => {
     setEditingFamily(family.id);
     setEditFamilyData(family);
   };
-  const saveFamily = (id: string) => {
-    setFamilies(families.map(f => f.id === id ? { ...f, ...editFamilyData } as Family : f));
+  const saveFamily = async (id: string) => {
+    setSaving(true);
+    await fetch('/api/family', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
     setEditingFamily(null);
+    await loadDashboard();
+    setSaving(false);
   };
-  const deleteFamily = (id: string) => setFamilies(families.filter(f => f.id !== id));
+  const deleteFamily = async (id: string) => {
+    setSaving(true);
+    await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    await loadDashboard();
+    setSaving(false);
+  };
 
   const startEditInvite = (invite: Invite) => {
     setEditingInvite(invite.id);
     setEditInviteData(invite);
   };
-  const saveInvite = (id: string) => {
-    setInvites(invites.map(i => i.id === id ? { ...i, ...editInviteData } as Invite : i));
+  const saveInvite = async (id: string) => {
+    setSaving(true);
+    await fetch('/api/invite', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
     setEditingInvite(null);
+    await loadDashboard();
+    setSaving(false);
   };
-  const deleteInvite = (id: string) => setInvites(invites.filter(i => i.id !== id));
+  const deleteInvite = async (id: string) => {
+    setSaving(true);
+    await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    await loadDashboard();
+    setSaving(false);
+  };
 
   const createIndividualInvite = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -329,31 +268,27 @@ export default function HomePage() {
     let code = generateCode();
     let link = buildLink(appOrigin, code, individualName, "", "", "individual");
 
-      const newGuest: Guest = {
-        id: Math.random().toString(36).substring(2, 9),
-        name: individualName,
-        family: individualFamily || "Sem família (pode ser adicionado futuramente)",
-        phone: individualPhone || "-",
-        companions: 0,
-        status: "Pendente",
-      };
-      
-      const newInvite: Invite = {
-        id: Math.random().toString(36).substring(2, 9),
-        type: "individual",
-        title: `Convite de ${individualName}`,
-        code,
-        link,
-        createdAt: new Date().toLocaleDateString("pt-BR"),
-        status: "Pendente",
-      };
-      
-      setGuests(current => [newGuest, ...current]);
-      setInvites(current => [newInvite, ...current]);
+      await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'individual',
+          name: individualName,
+          family: individualFamily,
+          phone: individualPhone,
+          message: individualMessage,
+          code,
+          title: `Convite de ${individualName}`,
+          link
+        })
+      });
+
       setIndividualName("");
       setIndividualPhone("");
       setIndividualMessage("");
       setIndividualFamily("");
+
+      await loadDashboard();
       setSaving(false);
   };
 
@@ -367,38 +302,25 @@ export default function HomePage() {
       .filter(Boolean);
     const link = buildLink(appOrigin, code, familyName, familyName, memberNames.join(", "), "family");
 
-      const newFam: Family = {
-        id: Math.random().toString(36).substring(2, 9),
-        name: familyName,
-        members: memberNames.join(", "),
-        inviteStatus: "Pendente",
-      };
-      const newInvite: Invite = {
-        id: Math.random().toString(36).substring(2, 9),
-        type: "family",
-        title: `Convite ${familyName}`,
-        code,
-        link,
-        createdAt: new Date().toLocaleDateString("pt-BR"),
-        status: "Pendente",
-      };
-      setFamilies((current) => [newFam, ...current]);
-      setInvites((current) => [newInvite, ...current]);
-      
-      if (memberNames.length > 0) {
-        const newGuests = memberNames.map(name => ({
-          id: Math.random().toString(36).substring(2, 9),
-          name: name,
-          family: familyName,
-          phone: "-",
-          companions: 0,
-          status: "Pendente"
-        }));
-        setGuests(current => [...newGuests, ...current]);
-      }
+      await fetch('/api/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'family',
+          familyName: familyName,
+          members: memberNames,
+          message: familyMessage,
+          code,
+          title: `Convite ${familyName}`,
+          link
+        })
+      });
+
       setFamilyName("");
       setFamilyMembers([""]);
       setFamilyMessage("");
+
+      await loadDashboard();
       setSaving(false);
   };
 
