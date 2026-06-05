@@ -26,7 +26,11 @@ export default async function RSVPPage(props: RSVPPageProps) {
       where: { codigo: params.code },
       include: {
         convidado: {
-          include: { familia: true },
+          include: { 
+            familia: {
+              include: { convidados: true }
+            } 
+          },
         },
       },
     });
@@ -53,12 +57,19 @@ export default async function RSVPPage(props: RSVPPageProps) {
   }
 
   const guest = invite?.convidado || {};
-  const isFamilyInvite = guest?.nome?.toLowerCase().startsWith("família") || false;
+  const isFamilyInvite = invite?.type === 'family' || guest?.nome?.toLowerCase().startsWith("família") || false;
   const familyName = guest?.familia?.nome_familia ?? "";
-  const members = isFamilyInvite
-    ? guest?.observacoes?.replace(/^Membros:\s*/i, "") ?? ""
-    : "";
-  const note = guest?.observacoes && !isFamilyInvite ? guest.observacoes : null;
+  
+  let members = "";
+  if (isFamilyInvite) {
+    if (guest?.familia?.convidados) {
+      members = guest.familia.convidados.map((c: any) => c.nome).join(",");
+    } else {
+      members = guest?.observacoes?.replace(/^Membros:\s*/i, "") ?? "";
+    }
+  }
+
+  const note = guest?.observacoes && !guest.observacoes.startsWith("Membros:") ? guest.observacoes : null;
 
   return (
     <main className="min-h-screen bg-[#F5E6C8] px-4 py-12 text-[#8B5A2B] sm:px-6 selection:bg-[#D4A55A] selection:text-[#F5E6C8] relative overflow-hidden">
@@ -81,7 +92,7 @@ export default async function RSVPPage(props: RSVPPageProps) {
                   <span className="text-base">🧭</span> Passaporte Safari
                 </span>
                 <h1 className="text-3xl font-extrabold text-[#8B5A2B] sm:text-4xl drop-shadow-sm">
-                    {isFamilyInvite ? `Bem-vindos, Família ${familyName}` : `Olá, ${guest.nome}`}
+                    {isFamilyInvite ? `Bem-vindos, ${familyName || 'Família'}` : `Olá, ${guest.nome}`}
                 </h1>
             </div>
             
@@ -104,7 +115,7 @@ export default async function RSVPPage(props: RSVPPageProps) {
 
         <InviteResponseForm
           inviteCode={invite.codigo}
-          guestName={isFamilyInvite ? `Família ${familyName}` : (guest.nome || "Convidado")}
+          guestName={isFamilyInvite ? (familyName || `Família`) : (guest.nome || "Convidado")}
           familyName={familyName}
           members={members}
           note={note}
