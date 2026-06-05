@@ -49,7 +49,7 @@ const buildLink = (baseOrigin: string, code: string, name: string = "", family: 
 };
 
 const mapGuest = (guest: any): Guest => ({
-  id: guest.id || Math.random().toString(36).substring(2, 9),
+  id: guest.id || guest._id || Math.random().toString(36).substring(2, 9),
   name: guest.nome || guest.name || "Sem nome",
   family: guest.familia?.nome_familia ?? guest.family ?? "Sem família (pode ser adicionado futuramente)",
   phone: guest.telefone ?? guest.phone ?? "-",
@@ -58,7 +58,7 @@ const mapGuest = (guest: any): Guest => ({
 });
 
 const mapFamily = (family: any): Family => ({
-  id: family.id || Math.random().toString(36).substring(2, 9),
+  id: family.id || family._id || Math.random().toString(36).substring(2, 9),
   name: family.nome_familia || family.name || "Família",
   members: Array.isArray(family.convidados)
     ? family.convidados.map((member: any) => member.nome || member.name).join(", ")
@@ -74,14 +74,14 @@ const mapInvite = (invite: any): Invite => {
   const isFamilyInvite = guestName.startsWith("Família");
 
   return {
-    id: invite.id || Math.random().toString(36).substring(2, 9),
+    id: invite.id || invite._id || Math.random().toString(36).substring(2, 9),
     type: invite.type || (isFamilyInvite ? "family" : "individual"),
     title: invite.title || (isFamilyInvite ? `Convite ${guestName}` : `Convite de ${guestName}`),
     code: invite.codigo || invite.code || "",
     link: invite.link || "",
     createdAt: invite.createdAt ? new Date(invite.createdAt).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR"),
     status: statusMapping[invite.convidado?.status_confirmacao] ?? invite.status ?? "Pendente",
-    guestId: invite.convidadoId || invite.convidado?.id,
+    guestId: invite.guestId || invite.convidadoId || invite.convidado?.id || invite.convidado?._id,
   };
 };
 
@@ -215,7 +215,7 @@ export default function HomePage() {
   };
   const saveGuest = async (id: string) => {
     setSaving(true);
-    const res = await fetch('/api/guest', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
+    const res = await fetch(`/api/guest?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
     if (!res.ok) alert("Erro ao salvar convidado");
     setEditingGuest(null);
     await loadDashboard();
@@ -226,15 +226,20 @@ export default function HomePage() {
     setSaving(true);
     try {
       // Exclui primeiramente o convite associado para evitar erros de restrição de chave estrangeira
-      const associatedInvite = invites.find((inv) => inv.guestId === id);
+      const guestObj = guests.find(g => g.id === id);
+      const associatedInvite = invites.find((inv) => inv.guestId === id || (guestObj?.name && inv.title.includes(guestObj.name)));
+      
       if (associatedInvite) {
-        await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: associatedInvite.id }) });
+        await fetch(`/api/invite?id=${associatedInvite.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: associatedInvite.id }) });
       }
 
-      const res = await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      if (!res.ok) throw new Error();
+      const res = await fetch(`/api/guest?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(errTxt || "Erro desconhecido");
+      }
       await loadDashboard();
-    } catch (e) { alert("Erro ao excluir"); }
+    } catch (e: any) { alert("Erro ao excluir convidado: " + e.message); }
     setSaving(false);
   };
 
@@ -244,7 +249,7 @@ export default function HomePage() {
   };
   const saveFamily = async (id: string) => {
     setSaving(true);
-    const res = await fetch('/api/family', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
+    const res = await fetch(`/api/family?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
     if (!res.ok) alert("Erro ao salvar família");
     setEditingFamily(null);
     await loadDashboard();
@@ -254,10 +259,13 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir esta família inteira?")) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      if (!res.ok) throw new Error();
+      const res = await fetch(`/api/family?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(errTxt || "Erro desconhecido");
+      }
       await loadDashboard();
-    } catch (e) { alert("Erro ao excluir"); }
+    } catch (e: any) { alert("Erro ao excluir família: " + e.message); }
     setSaving(false);
   };
 
@@ -267,7 +275,7 @@ export default function HomePage() {
   };
   const saveInvite = async (id: string) => {
     setSaving(true);
-    const res = await fetch('/api/invite', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
+    const res = await fetch(`/api/invite?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
     if (!res.ok) alert("Erro ao salvar convite");
     setEditingInvite(null);
     await loadDashboard();
@@ -277,10 +285,13 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir este link de convite?")) return;
     setSaving(true);
     try {
-      const res = await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      if (!res.ok) throw new Error();
+      const res = await fetch(`/api/invite?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(errTxt || "Erro desconhecido");
+      }
       await loadDashboard();
-    } catch (e) { alert("Erro ao excluir"); }
+    } catch (e: any) { alert("Erro ao excluir convite: " + e.message); }
     setSaving(false);
   };
 
