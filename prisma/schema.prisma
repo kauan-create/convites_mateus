@@ -6,3 +6,36 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+model Familia {
+  id           String      @id @default(cuid())
+  nome_familia String
+  convidados   Convidado[]
+}
+
+model Convidado {
+  id                 String   @id @default(cuid())
+  nome               String
+  telefone           String?
+  acompanhantes      Int      @default(0)
+  status_confirmacao String   @default("Pendente")
+  observacoes        String?
+  
+  familiaId          String?
+  familia            Familia? @relation(fields: [familiaId], references: [id])
+
+  convite            Convite?
+}
+
+model Convite {
+  id          String     @id @default(cuid())
+  codigo      String     @unique
+  type        String     @default("individual")
+  title       String
+  link        String
+  status      String     @default("Pendente")
+  createdAt   DateTime   @default(now())
+
+  convidadoId String?    @unique
+  convidado   Convidado? @relation(fields: [convidadoId], references: [id])
+}

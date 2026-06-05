@@ -22,7 +22,6 @@ export default async function RSVPPage(props: RSVPPageProps) {
   let invite: any = null;
   
   try {
-    // @ts-ignore - Ignorar erro temporariamente até criarmos as tabelas no Prisma
     invite = await prisma.convite.findUnique({
       where: { codigo: params.code },
       include: {
