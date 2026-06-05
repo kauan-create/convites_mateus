@@ -27,6 +27,7 @@ type Invite = {
   link: string;
   createdAt: string;
   status: string;
+  guestId?: string;
 };
 
 const statusMapping: Record<string, string> = {
@@ -80,6 +81,7 @@ const mapInvite = (invite: any): Invite => {
     link: invite.link || "",
     createdAt: invite.createdAt ? new Date(invite.createdAt).toLocaleDateString("pt-BR") : new Date().toLocaleDateString("pt-BR"),
     status: statusMapping[invite.convidado?.status_confirmacao] ?? invite.status ?? "Pendente",
+    guestId: invite.convidadoId || invite.convidado?.id,
   };
 };
 
@@ -105,9 +107,9 @@ export default function HomePage() {
       const res = await fetch(`/api/dashboard?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
-        setGuests(data.guests);
-        setFamilies(data.families);
-        setInvites(data.invites);
+        setGuests((data.guests || []).map(mapGuest));
+        setFamilies((data.families || []).map(mapFamily));
+        setInvites((data.invites || []).map(mapInvite));
       }
     } catch (e) { console.error(e); }
     setLoading(false);
@@ -223,6 +225,12 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir este convidado?")) return;
     setSaving(true);
     try {
+      // Exclui primeiramente o convite associado para evitar erros de restrição de chave estrangeira
+      const associatedInvite = invites.find((inv) => inv.guestId === id);
+      if (associatedInvite) {
+        await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: associatedInvite.id }) });
+      }
+
       const res = await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
       if (!res.ok) throw new Error();
       await loadDashboard();
