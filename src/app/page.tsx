@@ -102,7 +102,7 @@ export default function HomePage() {
 
   const loadDashboard = async () => {
     try {
-      const res = await fetch('/api/dashboard');
+      const res = await fetch(`/api/dashboard?t=${Date.now()}`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setGuests(data.guests);
@@ -219,9 +219,12 @@ export default function HomePage() {
     setSaving(false);
   };
   const deleteGuest = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este convidado?")) return;
     setSaving(true);
-    await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    await loadDashboard();
+    try {
+      await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      await loadDashboard();
+    } catch (e) { alert("Erro ao excluir"); }
     setSaving(false);
   };
 
@@ -237,9 +240,12 @@ export default function HomePage() {
     setSaving(false);
   };
   const deleteFamily = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir esta família inteira?")) return;
     setSaving(true);
-    await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    await loadDashboard();
+    try {
+      await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      await loadDashboard();
+    } catch (e) { alert("Erro ao excluir"); }
     setSaving(false);
   };
 
@@ -255,9 +261,12 @@ export default function HomePage() {
     setSaving(false);
   };
   const deleteInvite = async (id: string) => {
+    if (!confirm("Tem certeza que deseja excluir este link de convite?")) return;
     setSaving(true);
-    await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-    await loadDashboard();
+    try {
+      await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      await loadDashboard();
+    } catch (e) { alert("Erro ao excluir"); }
     setSaving(false);
   };
 
@@ -494,8 +503,8 @@ export default function HomePage() {
                             <p className="mt-1 text-xs font-bold uppercase tracking-wide text-[#d4a574]">🎫 CÓDIGO: {invite.code}</p>
                           </div>
                           <div className="flex items-center gap-2">
-                            <button onClick={() => startEditInvite(invite)} className="rounded-full bg-[#e8d4bc]/50 px-3 py-1 text-xs font-bold text-[#3d2817] transition hover:bg-[#5a7a52] hover:text-white">Editar</button>
-                            <button onClick={() => deleteInvite(invite.id)} className="rounded-full bg-[#a58555]/10 px-3 py-1 text-xs font-bold text-[#a58555] transition hover:bg-[#a58555] hover:text-white">Excluir</button>
+                            <button type="button" onClick={() => startEditInvite(invite)} className="rounded-full bg-[#e8d4bc]/50 px-3 py-1 text-xs font-bold text-[#3d2817] transition hover:bg-[#5a7a52] hover:text-white">Editar</button>
+                            <button type="button" onClick={() => deleteInvite(invite.id)} className="rounded-full bg-[#a58555]/10 px-3 py-1 text-xs font-bold text-[#a58555] transition hover:bg-[#a58555] hover:text-white">Excluir</button>
                           </div>
                         </div>
                         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t-2 border-[#e8d4bc] border-dashed pt-4">
@@ -560,8 +569,8 @@ export default function HomePage() {
                               <p className="text-[10px] font-black uppercase tracking-wider text-[#d4a574]">{guest.family}</p>
                             </div>
                             <div className="flex flex-col gap-1">
-                              <button onClick={() => startEditGuest(guest)} className="text-[10px] font-black uppercase text-[#5a7a52] hover:underline">Editar</button>
-                              <button onClick={() => deleteGuest(guest.id)} className="text-[10px] font-black uppercase text-[#a58555] hover:underline">Excluir</button>
+                              <button type="button" onClick={() => startEditGuest(guest)} className="text-[10px] font-black uppercase text-[#5a7a52] hover:underline">Editar</button>
+                              <button type="button" onClick={() => deleteGuest(guest.id)} className="text-[10px] font-black uppercase text-[#a58555] hover:underline">Excluir</button>
                             </div>
                           </div>
                           <div className="mt-3 flex items-center justify-end text-[11px] font-bold text-[#7A5A46]">
@@ -598,8 +607,8 @@ export default function HomePage() {
                           <div className="flex items-start justify-between">
                             <p className="font-extrabold text-[#3d2817]">{family.name}</p>
                             <div className="flex flex-col gap-1">
-                              <button onClick={() => startEditFamily(family)} className="text-[10px] font-black uppercase text-[#d4a574] hover:underline">Editar</button>
-                              <button onClick={() => deleteFamily(family.id)} className="text-[10px] font-black uppercase text-[#a58555] hover:underline">Excluir</button>
+                              <button type="button" onClick={() => startEditFamily(family)} className="text-[10px] font-black uppercase text-[#d4a574] hover:underline">Editar</button>
+                              <button type="button" onClick={() => deleteFamily(family.id)} className="text-[10px] font-black uppercase text-[#a58555] hover:underline">Excluir</button>
                             </div>
                           </div>
                           <div className="mt-2 space-y-2">

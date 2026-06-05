@@ -115,7 +115,7 @@ export default async function RSVPPage(props: RSVPPageProps) {
 
         <InviteResponseForm
           inviteCode={invite.codigo}
-          guestName={isFamilyInvite ? (familyName || `Família`) : (guest.nome || "Convidado")}
+          guestName={guest.nome || "Convidado"}
           familyName={familyName}
           members={members}
           note={note}

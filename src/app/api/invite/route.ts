@@ -8,33 +8,59 @@ export async function POST(request: Request) {
     if (body.type === 'individual') {
        let familiaId: string | null = null;
        if (body.family && body.family !== "Sem tribo / família") {
-         const fam = await prisma.familia.findFirst({ where: { nome_familia: body.family } });
-         if (fam) familiaId = fam.id;
+         let fam = await prisma.familia.findFirst({ where: { nome_familia: body.family } });
+         if (!fam) {
+           fam = await prisma.familia.create({ data: { nome_familia: body.family } });
+         }
+         familiaId = fam.id;
        }
 
        const convidado = await prisma.convidado.create({
-         data: { nome: body.name, telefone: body.phone, observacoes: body.message, ...(familiaId ? { familiaId } : {}) }
+         data: {
+           nome: body.name,
+           telefone: body.phone || null,
+           observacoes: body.message || null,
+           familiaId: familiaId
+         } as any
        });
 
        await prisma.convite.create({
-         data: { codigo: body.code, type: 'individual', title: body.title, link: body.link, convidadoId: convidado.id }
+         data: { 
+           codigo: body.code, 
+           type: 'individual', 
+           title: body.title, 
+           link: body.link, 
+           convidadoId: convidado.id
+         } as any
        });
        
     } else if (body.type === 'family') {
-       const fam = await prisma.familia.create({
-         data: { nome_familia: body.familyName }
-       });
+       let fam = await prisma.familia.findFirst({ where: { nome_familia: body.familyName } });
+       if (!fam) {
+         fam = await prisma.familia.create({ data: { nome_familia: body.familyName } });
+       }
        
        let principalId: string | null = null;
-       for (const memberName of body.members) {
+       for (const memberName of (body.members || [])) {
+         if (!memberName || memberName.trim() === '') continue;
          const conv = await prisma.convidado.create({
-           data: { nome: memberName, observacoes: body.message, familiaId: fam.id }
+           data: {
+             nome: memberName.trim(),
+             observacoes: body.message || null,
+             familiaId: fam.id
+           } as any
          });
          if (!principalId) principalId = conv.id;
        }
 
        await prisma.convite.create({
-         data: { codigo: body.code, type: 'family', title: body.title, link: body.link, convidadoId: principalId }
+         data: { 
+           codigo: body.code, 
+           type: 'family', 
+           title: body.title, 
+           link: body.link, 
+           convidadoId: principalId
+         } as any
        });
     }
     
