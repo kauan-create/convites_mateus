@@ -213,7 +213,8 @@ export default function HomePage() {
   };
   const saveGuest = async (id: string) => {
     setSaving(true);
-    await fetch('/api/guest', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
+    const res = await fetch('/api/guest', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
+    if (!res.ok) alert("Erro ao salvar convidado");
     setEditingGuest(null);
     await loadDashboard();
     setSaving(false);
@@ -222,7 +223,8 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir este convidado?")) return;
     setSaving(true);
     try {
-      await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const res = await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) throw new Error();
       await loadDashboard();
     } catch (e) { alert("Erro ao excluir"); }
     setSaving(false);
@@ -234,7 +236,8 @@ export default function HomePage() {
   };
   const saveFamily = async (id: string) => {
     setSaving(true);
-    await fetch('/api/family', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
+    const res = await fetch('/api/family', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
+    if (!res.ok) alert("Erro ao salvar família");
     setEditingFamily(null);
     await loadDashboard();
     setSaving(false);
@@ -243,7 +246,8 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir esta família inteira?")) return;
     setSaving(true);
     try {
-      await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const res = await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) throw new Error();
       await loadDashboard();
     } catch (e) { alert("Erro ao excluir"); }
     setSaving(false);
@@ -255,7 +259,8 @@ export default function HomePage() {
   };
   const saveInvite = async (id: string) => {
     setSaving(true);
-    await fetch('/api/invite', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
+    const res = await fetch('/api/invite', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
+    if (!res.ok) alert("Erro ao salvar convite");
     setEditingInvite(null);
     await loadDashboard();
     setSaving(false);
@@ -264,7 +269,8 @@ export default function HomePage() {
     if (!confirm("Tem certeza que deseja excluir este link de convite?")) return;
     setSaving(true);
     try {
-      await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      const res = await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      if (!res.ok) throw new Error();
       await loadDashboard();
     } catch (e) { alert("Erro ao excluir"); }
     setSaving(false);

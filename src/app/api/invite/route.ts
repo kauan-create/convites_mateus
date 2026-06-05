@@ -15,14 +15,29 @@ export async function POST(request: Request) {
          familiaId = fam.id;
        }
 
-       const convidado = await prisma.convidado.create({
-         data: {
-           nome: body.name,
-           telefone: body.phone || null,
-           observacoes: body.message || null,
-           familiaId: familiaId
-         } as any
+       // Busca o convidado para não duplicar caso já exista com esse nome na família
+       let convidado = await prisma.convidado.findFirst({
+         where: { nome: body.name, familiaId: familiaId }
        });
+
+       if (!convidado) {
+         convidado = await prisma.convidado.create({
+           data: {
+             nome: body.name,
+             telefone: body.phone || null,
+             observacoes: body.message || null,
+             familiaId: familiaId
+           } as any
+         });
+       } else {
+         convidado = await prisma.convidado.update({
+           where: { id: convidado.id },
+           data: { telefone: body.phone || convidado.telefone, observacoes: body.message || convidado.observacoes } as any
+         });
+       }
+
+       // Remove convite antigo se houver, para evitar erro de Unique constraint
+       await prisma.convite.deleteMany({ where: { convidadoId: convidado.id } });
 
        await prisma.convite.create({
          data: { 
@@ -43,15 +58,24 @@ export async function POST(request: Request) {
        let principalId: string | null = null;
        for (const memberName of (body.members || [])) {
          if (!memberName || memberName.trim() === '') continue;
-         const conv = await prisma.convidado.create({
-           data: {
-             nome: memberName.trim(),
-             observacoes: body.message || null,
-             familiaId: fam.id
-           } as any
+         
+         let conv = await prisma.convidado.findFirst({
+           where: { nome: memberName.trim(), familiaId: fam.id }
          });
+
+         if (!conv) {
+           conv = await prisma.convidado.create({
+             data: {
+               nome: memberName.trim(),
+               observacoes: body.message || null,
+               familiaId: fam.id
+             } as any
+           });
+         }
          if (!principalId) principalId = conv.id;
        }
+
+       if (principalId) await prisma.convite.deleteMany({ where: { convidadoId: principalId } });
 
        await prisma.convite.create({
          data: { 
@@ -88,7 +112,17 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
-    await prisma.convite.delete({ where: { id } });
+    const convite = await prisma.convite.findUnique({ where: { id } });
+    
+    if (convite) {
+      await prisma.convite.delete({ where: { id } });
+      
+      // Se for convite individual e o convidado não tiver família, apaga o convidado também para limpar o painel
+      if (convite.type === 'individual' && convite.convidadoId) {
+        await prisma.convidado.deleteMany({ where: { id: convite.convidadoId, familiaId: null } });
+      }
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
