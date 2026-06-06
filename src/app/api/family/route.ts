@@ -9,10 +9,20 @@ export async function PUT(request: Request) {
 
     if (!id) return NextResponse.json({ error: 'ID ausente' }, { status: 400 });
 
-    await prisma.familia.update({
-      where: { id },
-      data: { nome_familia: body.name } as any
-    });
+    try {
+      await prisma.familia.update({
+        where: { id },
+        data: { nome_familia: body.name } as any
+      });
+    } catch (e) {
+      const numId = parseInt(id.toString(), 10);
+      if (!isNaN(numId)) {
+        await prisma.familia.update({
+          where: { id: numId } as any,
+          data: { nome_familia: body.name } as any
+        });
+      }
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -32,15 +42,30 @@ export async function DELETE(request: Request) {
     }
     if (!id) return NextResponse.json({ error: 'ID não fornecido' }, { status: 400 });
 
-    const guests = await prisma.convidado.findMany({ where: { familiaId: id } });
-    const guestIds = guests.map((g: any) => g.id);
+    try {
+      const guests = await prisma.convidado.findMany({ where: { familiaId: id } });
+      const guestIds = guests.map((g: any) => g.id);
 
-    if (guestIds.length > 0) {
-      await prisma.convite.deleteMany({ where: { convidadoId: { in: guestIds } } });
+      if (guestIds.length > 0) {
+        await prisma.convite.deleteMany({ where: { convidadoId: { in: guestIds } } });
+      }
+      
+      await prisma.convidado.deleteMany({ where: { familiaId: id } });
+      await prisma.familia.delete({ where: { id } });
+    } catch (e) {
+      const numId = parseInt(id.toString(), 10);
+      if (!isNaN(numId)) {
+        const guests = await prisma.convidado.findMany({ where: { familiaId: numId } as any });
+        const guestIds = guests.map((g: any) => g.id);
+
+        if (guestIds.length > 0) {
+          await prisma.convite.deleteMany({ where: { convidadoId: { in: guestIds } } });
+        }
+        
+        await prisma.convidado.deleteMany({ where: { familiaId: numId } as any });
+        await prisma.familia.delete({ where: { id: numId } as any });
+      }
     }
-    
-    await prisma.convidado.deleteMany({ where: { familiaId: id } });
-    await prisma.familia.delete({ where: { id } });
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
