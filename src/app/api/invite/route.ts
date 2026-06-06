@@ -47,8 +47,8 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ error: 'ID ausente' }, { status: 400 });
     
     try {
-      await prisma.convite.deleteMany({ where: { convidadoId: id } });
-      await prisma.convidado.deleteMany({ where: { id } });
+      await prisma.convite.deleteMany({ where: { convidadoId: id } as any });
+      await prisma.convidado.deleteMany({ where: { id } as any });
     } catch (e) {
       const numId = parseInt(id.toString(), 10);
       if (!isNaN(numId)) {
