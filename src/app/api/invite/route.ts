@@ -7,7 +7,7 @@ export async function POST(request: Request) {
 
     if (body.type === 'individual') {
        let familiaId: string | null = null;
-       if (body.family && body.family !== "Sem tribo / família") {
+       if (body.family && body.family !== "Sem tribo / família" && body.family !== "Sem família (pode ser adicionado futuramente)") {
          let fam = await prisma.familia.findFirst({ where: { nome_familia: body.family } });
          if (!fam) {
            fam = await prisma.familia.create({ data: { nome_familia: body.family } });
@@ -15,7 +15,6 @@ export async function POST(request: Request) {
          familiaId = fam.id;
        }
 
-       // Busca o convidado para não duplicar caso já exista com esse nome na família
        let convidado = await prisma.convidado.findFirst({
          where: { nome: body.name, familiaId: familiaId }
        });
@@ -36,7 +35,6 @@ export async function POST(request: Request) {
          });
        }
 
-       // Remove convite antigo se houver, para evitar erro de Unique constraint
        await prisma.convite.deleteMany({ where: { convidadoId: convidado.id } });
 
        await prisma.convite.create({
@@ -50,48 +48,42 @@ export async function POST(request: Request) {
        });
        
     } else if (body.type === 'family') {
-       let fam = await prisma.familia.findFirst({ where: { nome_familia: body.familyName } });
-       if (!fam) {
-         fam = await prisma.familia.create({ data: { nome_familia: body.familyName } });
-       }
+       // Cria uma nova família para isolar os membros corretamente
+       const fam = await prisma.familia.create({ data: { nome_familia: body.familyName } });
        
        let principalId: string | null = null;
        for (const memberName of (body.members || [])) {
          if (!memberName || memberName.trim() === '') continue;
          
-         let conv = await prisma.convidado.findFirst({
-           where: { nome: memberName.trim(), familiaId: fam.id }
+         const conv = await prisma.convidado.create({
+           data: {
+             nome: memberName.trim(),
+             observacoes: body.message || null,
+             familiaId: fam.id
+           } as any
          });
-
-         if (!conv) {
-           conv = await prisma.convidado.create({
-             data: {
-               nome: memberName.trim(),
-               observacoes: body.message || null,
-               familiaId: fam.id
-             } as any
-           });
-         }
+         
          if (!principalId) principalId = conv.id;
        }
 
-       if (principalId) await prisma.convite.deleteMany({ where: { convidadoId: principalId } });
-
-       await prisma.convite.create({
-         data: { 
-           codigo: body.code, 
-           type: 'family', 
-           title: body.title, 
-           link: body.link, 
-           convidadoId: principalId
-         } as any
-       });
+       if (principalId) {
+         await prisma.convite.deleteMany({ where: { convidadoId: principalId } });
+         await prisma.convite.create({
+           data: { 
+             codigo: body.code, 
+             type: 'family', 
+             title: body.title, 
+             link: body.link, 
+             convidadoId: principalId
+           } as any
+         });
+       }
     }
     
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Erro ao criar convite' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Erro POST Invite:", error);
+    return NextResponse.json({ error: error.message || 'Erro ao criar convite' }, { status: 500 });
   }
 }
 
@@ -100,12 +92,12 @@ export async function PUT(request: Request) {
     const { id, title, code, status } = await request.json();
     await prisma.convite.update({
       where: { id },
-      data: { title, codigo: code, status }
+      data: { title, codigo: code, status } as any
     });
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Erro ao atualizar convite' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Erro PUT Invite:", error);
+    return NextResponse.json({ error: error.message || 'Erro ao atualizar convite' }, { status: 500 });
   }
 }
 
@@ -113,19 +105,15 @@ export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
     const convite = await prisma.convite.findUnique({ where: { id } });
-    
     if (convite) {
       await prisma.convite.delete({ where: { id } });
-      
-      // Se for convite individual e o convidado não tiver família, apaga o convidado também para limpar o painel
       if (convite.type === 'individual' && convite.convidadoId) {
         await prisma.convidado.deleteMany({ where: { id: convite.convidadoId, familiaId: null } });
       }
     }
-
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: 'Erro ao excluir convite' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Erro DELETE Invite:", error);
+    return NextResponse.json({ error: error.message || 'Erro ao excluir convite' }, { status: 500 });
   }
 }

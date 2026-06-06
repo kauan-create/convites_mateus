@@ -244,7 +244,8 @@ export default function HomePage() {
   const deleteGuest = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este convidado?")) return;
     setSaving(true);
-    await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    const res = await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    if (!res.ok) alert("Erro ao excluir: " + (await res.text()));
     await loadDashboard();
     setSaving(false);
   };
