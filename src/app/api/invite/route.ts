@@ -15,14 +15,6 @@ export async function PUT(request: Request) {
         familiaId = fam.id;
     }
 
-    await prisma.convidado.update({
-      where: { id },
-      data: {
-        nome: name,
-        status_confirmacao: status,
-        familiaId: familiaId
-      } as any
-    });
     try {
       await prisma.convidado.update({
         where: { id },
@@ -53,17 +45,6 @@ export async function DELETE(request: Request) {
   try {
     const { id } = await request.json();
     if (!id) return NextResponse.json({ error: 'ID ausente' }, { status: 400 });
-    
-    try {
-      await prisma.convite.deleteMany({ where: { convidadoId: id } });
-      await prisma.convidado.deleteMany({ where: { id } });
-    } catch (e) {
-      const numId = parseInt(id.toString(), 10);
-      if (!isNaN(numId)) {
-        await prisma.convite.deleteMany({ where: { convidadoId: numId } as any });
-        await prisma.convidado.deleteMany({ where: { id: numId } as any });
-      }
-    }
     await prisma.convite.deleteMany({ where: { convidadoId: id } });
     await prisma.convidado.deleteMany({ where: { id } });
     return NextResponse.json({ success: true });
