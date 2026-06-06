@@ -15,24 +15,14 @@ export async function PUT(request: Request) {
         familiaId = fam.id;
     }
 
-    try {
-      await prisma.convidado.update({
-        where: { id },
-        data: {
-          nome: name,
-          status_confirmacao: status,
-          familiaId: familiaId
-        } as any
-      });
-    } catch(e) {
-      const numId = parseInt(id.toString(), 10);
-      if (!isNaN(numId)) {
-        await prisma.convidado.update({
-          where: { id: numId } as any,
-          data: { nome: name, status_confirmacao: status, familiaId: familiaId } as any
-        });
-      }
-    }
+    await prisma.convidado.update({
+      where: { id },
+      data: {
+        nome: name,
+        status_confirmacao: status,
+        familiaId: familiaId
+      } as any
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {
