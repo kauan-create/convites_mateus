@@ -39,12 +39,13 @@ export async function DELETE(request: Request) {
     try {
       await prisma.convite.deleteMany({ where: { convidadoId: id } });
       await prisma.convidado.deleteMany({ where: { id } });
-    } catch(fallbackError) {
-      const numericId = parseInt(id.toString(), 10);
-      await prisma.convite.deleteMany({ where: { convidadoId: numericId } as any });
-      await prisma.convidado.deleteMany({ where: { id: numericId } as any });
+    } catch (e) {
+      const numId = parseInt(id.toString(), 10);
+      if (!isNaN(numId)) {
+        await prisma.convite.deleteMany({ where: { convidadoId: numId } as any });
+        await prisma.convidado.deleteMany({ where: { id: numId } as any });
+      }
     }
-    
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Erro DELETE Guest:", error);
