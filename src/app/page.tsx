@@ -640,11 +640,19 @@ export default function HomePage() {
                               <span>Membros da Tribo</span>
                             </div>
                             <div className="flex flex-wrap gap-2 text-xs font-bold text-[#3d2817]">
-                              {family.members.split(",").map((member) => (
+                            {family.raw?.convidados ? (
+                              family.raw.convidados.map((member: any) => (
+                                <span key={member.id || member.nome} className={`rounded-full px-3 py-1 ${member.status === 'Confirmado' ? 'bg-[#5a7a52]/20 text-[#5a7a52]' : member.status === 'Recusado' ? 'bg-[#a58555]/20 text-[#a58555]' : 'bg-[#f5ede2] text-[#3d2817]'}`}>
+                                  {member.nome} {member.status === 'Confirmado' ? '✓' : member.status === 'Recusado' ? 'x' : ''}
+                                </span>
+                              ))
+                            ) : (
+                              family.members.split(",").map((member) => (
                                 <span key={member.trim()} className="rounded-full bg-[#f5ede2] px-3 py-1 text-[#3d2817]">
                                   {member.trim() || "Sem nome"}
                                 </span>
-                              ))}
+                              ))
+                            )}
                             </div>
                           </div>
                           <div className="mt-3 border-t-2 border-[#e8d4bc] border-dashed pt-3 text-right">

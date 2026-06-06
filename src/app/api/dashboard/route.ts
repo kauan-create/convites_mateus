@@ -16,7 +16,12 @@ export async function GET() {
         id: f.id,
         name: f.nome_familia,
         members: f.convidados.map(c => c.nome).join(', '),
-        inviteStatus
+        inviteStatus,
+        convidados: f.convidados.map(c => ({
+          id: c.id,
+          nome: c.nome,
+          status: c.status_confirmacao || "Pendente"
+        }))
       };
     });
 
