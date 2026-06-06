@@ -210,6 +210,11 @@ export default function HomePage() {
     [guests]
   );
 
+  const soloGuests = useMemo(
+    () => guests.filter((g) => !g.family || g.family === "Sem família (pode ser adicionado futuramente)" || g.family === "Sem tribo / família"),
+    [guests]
+  );
+
   useEffect(() => {
     // Detecta o IP local para substituir o localhost automaticamente
     if (typeof window !== "undefined") {
@@ -560,7 +565,7 @@ export default function HomePage() {
                 </div>
                 
                 <div className="space-y-4">
-                  {guests.map((guest) => (
+                  {soloGuests.map((guest) => (
                     <div key={guest.id} className="rounded-2xl border-2 border-[#e8d4bc] bg-[#fef9f3] p-4 transition hover:border-[#5a7a52]/40">
                       {editingGuest === guest.id ? (
                         <div className="space-y-2">

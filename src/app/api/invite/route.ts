@@ -52,7 +52,8 @@ export async function POST(request: Request) {
        const fam = await prisma.familia.create({ data: { nome_familia: body.familyName } });
        
        let principalId: string | null = null;
-       for (const memberName of (body.members || [])) {
+       const membersList = (body.members && body.members.length > 0) ? body.members : [body.familyName];
+       for (const memberName of membersList) {
          if (!memberName || memberName.trim() === '') continue;
          
          const conv = await prisma.convidado.create({
