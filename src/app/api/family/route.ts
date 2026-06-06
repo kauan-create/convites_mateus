@@ -1,27 +1,19 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function GET() {
-  return NextResponse.json({ message: "API Family funcionando!" });
-}
-
 export async function PUT(request: Request) {
   try {
-    const data = await request.json();
-    const { id, name, inviteStatus } = data;
-    
+    const body = await request.json();
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id') || body.id;
+
+    if (!id) return NextResponse.json({ error: 'ID ausente' }, { status: 400 });
+
     await prisma.familia.update({
       where: { id },
-      data: { nome_familia: name }
+      data: { nome_familia: body.name } as any
     });
 
-    if (inviteStatus) {
-       await prisma.convidado.updateMany({
-           where: { familiaId: id },
-           data: { status_confirmacao: inviteStatus }
-       });
-    }
-    
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error(error);
@@ -31,16 +23,28 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const { id } = await request.json();
-    const convidados = await prisma.convidado.findMany({ where: { familiaId: id } });
-    for (const c of convidados) {
-        await prisma.convite.deleteMany({ where: { convidadoId: c.id } });
+    const { searchParams } = new URL(request.url);
+    let id = searchParams.get('id');
+
+    if (!id) {
+      const body = await request.json().catch(() => ({}));
+      id = body.id;
     }
+    if (!id) return NextResponse.json({ error: 'ID não fornecido' }, { status: 400 });
+
+    const guests = await prisma.convidado.findMany({ where: { familiaId: id } });
+    const guestIds = guests.map((g: any) => g.id);
+
+    if (guestIds.length > 0) {
+      await prisma.convite.deleteMany({ where: { convidadoId: { in: guestIds } } });
+    }
+    
     await prisma.convidado.deleteMany({ where: { familiaId: id } });
     await prisma.familia.delete({ where: { id } });
+
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return NextResponse.json({ error: 'Erro ao excluir família' }, { status: 500 });
+    return NextResponse.json({ error: 'Erro ao excluir família: ' + error.message }, { status: 500 });
   }
 }

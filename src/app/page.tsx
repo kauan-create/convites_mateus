@@ -236,9 +236,17 @@ export default function HomePage() {
   };
   const saveGuest = async (id: string) => {
     setSaving(true);
-    const guestObj = guests.find(g => g.id === id);
-    const res = await fetch(`/api/guest?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw, ...editGuestData }) });
-    if (!res.ok) alert("Erro ao salvar convidado");
+    try {
+      const guestObj = guests.find(g => g.id === id);
+      let res = await fetch(`/api/guest?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw, ...editGuestData }) });
+      if (res.status === 404) res = await fetch(`/api/guests?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw, ...editGuestData }) });
+      
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(errTxt.includes("<!DOCTYPE html>") ? "A rota '/api/guest' não existe (Erro 404). Crie a rota no backend." : errTxt);
+      }
+    } catch (e: any) { alert("Erro ao salvar convidado: " + e.message); }
+
     setEditingGuest(null);
     await loadDashboard();
     setSaving(false);
@@ -255,10 +263,12 @@ export default function HomePage() {
         await fetch(`/api/invite?id=${associatedInvite.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id: associatedInvite.id, ...associatedInvite.raw }) });
       }
 
-      const res = await fetch(`/api/guest?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw }) });
+      let res = await fetch(`/api/guest?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw }) });
+      if (res.status === 404) res = await fetch(`/api/guests?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...guestObj?.raw }) });
+      
       if (!res.ok) {
         const errTxt = await res.text();
-        throw new Error(errTxt || "Erro desconhecido");
+        throw new Error(errTxt.includes("<!DOCTYPE html>") ? "A rota '/api/guest' não existe (Erro 404). Você precisa criar este arquivo no backend." : errTxt);
       }
       await loadDashboard();
     } catch (e: any) { alert("Erro ao excluir convidado: " + e.message); }
@@ -271,9 +281,17 @@ export default function HomePage() {
   };
   const saveFamily = async (id: string) => {
     setSaving(true);
-    const familyObj = families.find(f => f.id === id);
-    const res = await fetch(`/api/family?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw, ...editFamilyData }) });
-    if (!res.ok) alert("Erro ao salvar família");
+    try {
+      const familyObj = families.find(f => f.id === id);
+      let res = await fetch(`/api/family?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw, ...editFamilyData }) });
+      if (res.status === 404) res = await fetch(`/api/families?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw, ...editFamilyData }) });
+      
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(errTxt.includes("<!DOCTYPE html>") ? "A rota '/api/family' não existe (Erro 404)." : errTxt);
+      }
+    } catch (e: any) { alert("Erro ao salvar família: " + e.message); }
+
     setEditingFamily(null);
     await loadDashboard();
     setSaving(false);
@@ -283,10 +301,12 @@ export default function HomePage() {
     setSaving(true);
     try {
       const familyObj = families.find(f => f.id === id);
-      const res = await fetch(`/api/family?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw }) });
+      let res = await fetch(`/api/family?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw }) });
+      if (res.status === 404) res = await fetch(`/api/families?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...familyObj?.raw }) });
+      
       if (!res.ok) {
         const errTxt = await res.text();
-        throw new Error(errTxt || "Erro desconhecido");
+        throw new Error(errTxt.includes("<!DOCTYPE html>") ? "A rota '/api/family' não existe (Erro 404)." : errTxt);
       }
       await loadDashboard();
     } catch (e: any) { alert("Erro ao excluir família: " + e.message); }
@@ -299,9 +319,17 @@ export default function HomePage() {
   };
   const saveInvite = async (id: string) => {
     setSaving(true);
-    const inviteObj = invites.find(i => i.id === id);
-    const res = await fetch(`/api/invite?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw, ...editInviteData }) });
-    if (!res.ok) alert("Erro ao salvar convite");
+    try {
+      const inviteObj = invites.find(i => i.id === id);
+      let res = await fetch(`/api/invite?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw, ...editInviteData }) });
+      if (res.status === 404) res = await fetch(`/api/invites?id=${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw, ...editInviteData }) });
+      
+      if (!res.ok) {
+        const errTxt = await res.text();
+        throw new Error(errTxt.includes("<!DOCTYPE html>") ? "A rota '/api/invite' não existe (Erro 404)." : errTxt);
+      }
+    } catch (e: any) { alert("Erro ao salvar convite: " + e.message); }
+
     setEditingInvite(null);
     await loadDashboard();
     setSaving(false);
@@ -311,10 +339,12 @@ export default function HomePage() {
     setSaving(true);
     try {
       const inviteObj = invites.find(i => i.id === id);
-      const res = await fetch(`/api/invite?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw }) });
+      let res = await fetch(`/api/invite?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw }) });
+      if (res.status === 404) res = await fetch(`/api/invites?id=${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...inviteObj?.raw }) });
+
       if (!res.ok) {
         const errTxt = await res.text();
-        throw new Error(errTxt || "Erro desconhecido");
+        throw new Error(errTxt.includes("<!DOCTYPE html>") ? "A rota '/api/invite' não existe (Erro 404)." : errTxt);
       }
       await loadDashboard();
     } catch (e: any) { alert("Erro ao excluir convite: " + e.message); }
