@@ -236,10 +236,7 @@ export default function HomePage() {
   };
   const saveGuest = async (id: string) => {
     setSaving(true);
-    try {
-      const res = await fetch('/api/guest', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
-      if (!res.ok) throw new Error("Erro no servidor");
-    } catch (e: any) { alert("Erro ao salvar convidado. Reinicie o servidor se o erro persistir."); }
+    await fetch('/api/guest', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editGuestData }) });
     setEditingGuest(null);
     await loadDashboard();
     setSaving(false);
@@ -247,11 +244,8 @@ export default function HomePage() {
   const deleteGuest = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este convidado?")) return;
     setSaving(true);
-    try {
-      const res = await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      if (!res.ok) throw new Error("Erro no servidor");
-      await loadDashboard();
-    } catch (e: any) { alert("Erro ao excluir convidado. Se o erro for 404, reinicie seu servidor (terminal)."); }
+    await fetch('/api/guest', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    await loadDashboard();
     setSaving(false);
   };
 
@@ -261,10 +255,7 @@ export default function HomePage() {
   };
   const saveFamily = async (id: string) => {
     setSaving(true);
-    try {
-      const res = await fetch('/api/family', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
-      if (!res.ok) throw new Error("Erro no servidor");
-    } catch (e: any) { alert("Erro ao salvar família. Reinicie o servidor se o erro persistir."); }
+    await fetch('/api/family', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editFamilyData }) });
     setEditingFamily(null);
     await loadDashboard();
     setSaving(false);
@@ -272,11 +263,8 @@ export default function HomePage() {
   const deleteFamily = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir esta família inteira?")) return;
     setSaving(true);
-    try {
-      const res = await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      if (!res.ok) throw new Error("Erro no servidor");
-      await loadDashboard();
-    } catch (e: any) { alert("Erro ao excluir família. Se o erro for 404, reinicie seu servidor (terminal)."); }
+    await fetch('/api/family', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    await loadDashboard();
     setSaving(false);
   };
 
@@ -286,10 +274,7 @@ export default function HomePage() {
   };
   const saveInvite = async (id: string) => {
     setSaving(true);
-    try {
-      const res = await fetch('/api/invite', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
-      if (!res.ok) throw new Error("Erro no servidor");
-    } catch (e: any) { alert("Erro ao salvar convite. Reinicie o servidor se o erro persistir."); }
+    await fetch('/api/invite', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...editInviteData }) });
     setEditingInvite(null);
     await loadDashboard();
     setSaving(false);
@@ -297,11 +282,8 @@ export default function HomePage() {
   const deleteInvite = async (id: string) => {
     if (!confirm("Tem certeza que deseja excluir este link de convite?")) return;
     setSaving(true);
-    try {
-      const res = await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      if (!res.ok) throw new Error("Erro no servidor");
-      await loadDashboard();
-    } catch (e: any) { alert("Erro ao excluir convite. Se o erro for 404, reinicie seu servidor (terminal)."); }
+    await fetch('/api/invite', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    await loadDashboard();
     setSaving(false);
   };
 
