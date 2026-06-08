@@ -27,6 +27,17 @@ model Convidado {
   convite            Convite?
 }
 
+model TripulanteSolo {
+  id                 String   @id @default(cuid())
+  nome               String
+  telefone           String?
+  acompanhantes      Int      @default(0)
+  status_confirmacao String   @default("Pendente")
+  observacoes        String?
+  
+  convite            Convite?
+}
+
 model Convite {
   id          String     @id @default(cuid())
   codigo      String     @unique
@@ -37,5 +48,8 @@ model Convite {
   createdAt   DateTime   @default(now())
 
   convidadoId String?    @unique
-  convidado   Convidado? @relation(fields: [convidadoId], references: [id])
+  convidado   Convidado? @relation(fields: [convidadoId], references: [id], onDelete: Cascade)
+
+  tripulanteSoloId String? @unique
+  tripulanteSolo   TripulanteSolo? @relation(fields: [tripulanteSoloId], references: [id], onDelete: Cascade)
 }

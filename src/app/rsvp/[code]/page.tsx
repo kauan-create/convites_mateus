@@ -25,6 +25,7 @@ export default async function RSVPPage(props: RSVPPageProps) {
     invite = await prisma.convite.findUnique({
       where: { codigo: params.code },
       include: {
+            tripulanteSolo: true,
         convidado: {
           include: { 
             familia: {
@@ -56,8 +57,8 @@ export default async function RSVPPage(props: RSVPPageProps) {
     };
   }
 
-  const guest = invite?.convidado || {};
-  const isFamilyInvite = invite?.type === 'family' || guest?.nome?.toLowerCase().startsWith("família") || false;
+  const isFamilyInvite = invite?.type === 'family' || invite?.convidado?.nome?.toLowerCase().startsWith("família") || false;
+  const guest = invite?.type === 'individual' ? (invite?.tripulanteSolo || invite?.convidado || {}) : (invite?.convidado || {});
   const familyName = guest?.familia?.nome_familia ?? "";
   
   let members = "";

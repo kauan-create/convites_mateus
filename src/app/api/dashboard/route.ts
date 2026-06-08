@@ -7,7 +7,10 @@ export async function GET() {
   try {
     const familiasDB = await prisma.familia.findMany({ include: { convidados: true } });
     const convidadosDB = await prisma.convidado.findMany({ include: { familia: true } });
-    const convitesDB = await prisma.convite.findMany();
+    const tripulantesSoloDB = await prisma.tripulanteSolo.findMany();
+    const convitesDB = await prisma.convite.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
 
     const families = familiasDB.map(f => {
       const statuses = f.convidados.map(c => c.status_confirmacao);
@@ -34,6 +37,17 @@ export async function GET() {
       status: c.status_confirmacao || "Pendente"
     }));
 
+    const soloGuests = tripulantesSoloDB.map(t => ({
+      id: t.id,
+      name: t.nome,
+      family: "Sem tribo / família",
+      phone: t.telefone || "-",
+      companions: t.acompanhantes || 0,
+      status: t.status_confirmacao || "Pendente"
+    }));
+
+    const allGuests = [...guests, ...soloGuests];
+
     const invites = convitesDB.map(i => ({
       id: i.id,
       type: i.type,
@@ -44,7 +58,7 @@ export async function GET() {
       status: i.status
     }));
 
-    return NextResponse.json({ families, guests, invites });
+    return NextResponse.json({ families, guests: allGuests, invites });
   } catch (error) {
     console.error("Erro no dashboard:", error);
     return NextResponse.json({ error: "Erro ao buscar dados" }, { status: 500 });

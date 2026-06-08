@@ -542,6 +542,9 @@ export default function HomePage() {
                             <button type="button" onClick={() => handleCopy(invite.link)} className="inline-flex items-center gap-1 rounded-full bg-[#d4a574] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#d4a574]/30 transition hover:bg-[#a58555]" title={getShareableLink(invite.link)}>
                               {copiedLink === invite.link ? "Copiado!" : "Copiar"}
                             </button>
+                            <a href={`https://wa.me/?text=${encodeURIComponent(`Olá! Aqui está o seu convite para a Aventura do Mateus: ${getShareableLink(invite.link)}`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full bg-[#25D366] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#25D366]/30 transition hover:bg-[#1DA851]">
+                              WhatsApp
+                            </a>
                             <a href={getShareableLink(invite.link)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 rounded-full bg-[#3d2817] px-4 py-2 text-xs font-bold text-white shadow-md shadow-[#3d2817]/30 transition hover:bg-[#2a1c11]">
                               Acessar
                             </a>

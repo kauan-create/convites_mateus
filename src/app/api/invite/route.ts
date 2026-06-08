@@ -6,19 +6,12 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     if (body.type === 'individual') {
-       let familiaId: string | null = null;
-       if (body.family && body.family !== "Sem tribo / família" && body.family !== "Sem família (pode ser adicionado futuramente)") {
-         let fam = await prisma.familia.findFirst({ where: { nome_familia: body.family } });
-         if (!fam) { fam = await prisma.familia.create({ data: { nome_familia: body.family } }); }
-         familiaId = fam.id;
-       }
-
-       const convidado = await prisma.convidado.create({
-         data: { nome: body.name, telefone: body.phone || null, observacoes: body.message || null, familiaId }
+       const tripulante = await prisma.tripulanteSolo.create({
+         data: { nome: body.name, telefone: body.phone || null, observacoes: body.message || null }
        });
 
        await prisma.convite.create({
-         data: { codigo: body.code, type: 'individual', title: body.title, link: body.link, convidadoId: convidado.id }
+         data: { codigo: body.code, type: 'individual', title: body.title, link: body.link, tripulanteSoloId: tripulante.id }
        });
        
     } else if (body.type === 'family') {
@@ -74,6 +67,8 @@ export async function DELETE(request: Request) {
       await prisma.convite.delete({ where: { id } });
       if (convite.type === 'individual' && convite.convidadoId) {
         await prisma.convidado.deleteMany({ where: { id: convite.convidadoId } });
+      } else if (convite.type === 'individual' && convite.tripulanteSoloId) {
+        await prisma.tripulanteSolo.deleteMany({ where: { id: convite.tripulanteSoloId } });
       }
     } else {
       await prisma.convite.deleteMany({ where: { id } });
